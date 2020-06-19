@@ -21,7 +21,8 @@ void array_append(Array* arr, int item) {
   }
 }
 
-void array_remove(Array* arr) {
+int array_remove_last(Array* arr) {
+  int deleted = arr->items[arr->size];
   arr->items[arr->size] = 0; // by right can also not do anything
   arr->size--;
   if (arr->size == (int) (arr->capacity / 4)) {
@@ -32,6 +33,7 @@ void array_remove(Array* arr) {
     arr->items = new_items;
     arr->capacity = (int) (arr->capacity / 2);
   }
+  return deleted;
 }
 
 void array_destroy(Array* arr) {
@@ -50,18 +52,18 @@ int main() {
   }
   printf("---Removes---\n");
   for (int i = 0; i < 14; i++) {
-    array_remove(&arr);
+    array_remove_last(&arr);
     printf("Size: %d, Capacity: %d\n", arr.size, arr.capacity);
   }
 
   printf("append remove append remove\n");
   array_append(&arr, 100);
   printf("Size: %d, Capacity: %d\n", arr.size, arr.capacity);
-  array_remove(&arr);
+  array_remove_last(&arr);
   printf("Size: %d, Capacity: %d\n", arr.size, arr.capacity);
   array_append(&arr, 100);
   printf("Size: %d, Capacity: %d\n", arr.size, arr.capacity);
-  array_remove(&arr);
+  array_remove_last(&arr);
   printf("Size: %d, Capacity: %d\n", arr.size, arr.capacity);
 
   array_destroy(&arr);

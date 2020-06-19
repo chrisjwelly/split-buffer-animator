@@ -6,6 +6,6 @@ typedef struct Array {
 
 void array_init(Array* arr, int initial_capacity);
 void array_append(Array* arr, int item);
-void array_remove(Array* arr);
+int array_remove_last(Array* arr);
 void array_destroy(Array* arr);
 
