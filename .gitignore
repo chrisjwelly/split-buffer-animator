@@ -1,5 +1,11 @@
+# original gitignore
 gapbuf
 intro.ppm
 multicursors.ppm
 macros.ppm
 illusion.ppm
+
+# Ignores vim swp files
+*.swp
+
+a.out
