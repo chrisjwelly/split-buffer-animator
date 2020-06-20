@@ -350,7 +350,9 @@ void run_tests() {
 }
 // ---END OF TESTING METHODS---
 
+/*
 int main(void) {
   run_tests();
   return 0;
 }
+*/

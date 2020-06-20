@@ -405,6 +405,29 @@ gapbuf_draw(const struct gapbuf *b, const struct image *font)
     return m;
 }
 
+struct image *
+splitbuf_draw(SplitBuffer *b, const struct image *font)
+{
+    int w = 608;
+    int h = GAPBUF_FONTSCALE + GAPBUF_SCALE;
+    struct image *m = image_create(w, h);
+    image_rect(m, 0, 0, w, h, GAPBUF_BG);
+
+    for (size_t i = 0; i < b->preGap->size; i++) {
+      draw_char(m, i, b->preGap->items[i], font, 0);
+    }
+
+    for (size_t i = 0; i < b->postGap->size; i++) {
+      int sequenceIdx = b->preGap->size + i;
+      int postGapIdx = (b->postGap->size - 1) - i;
+      draw_char(m, sequenceIdx, b->postGap->items[postGapIdx], font, i == 0);
+    }
+    /* Always draw the cursor */
+    if (b->postGap->size == 0)
+      draw_char(m, b->preGap->size, 0, font, 1);
+    return m;
+}
+
 enum opcode {
     C_HALT,
     C_WAIT,
@@ -429,7 +452,7 @@ struct command {
 
 #define FRAME() \
     do { \
-        image = gapbuf_draw(buf, font); \
+        image = splitbuf_draw(buf, font); \
         image_write(image, imgout); \
         free(image); \
     } while (0)
@@ -437,8 +460,8 @@ struct command {
 void
 animate(const struct command *p, size_t z, FILE *imgout)
 {
-    struct gapbuf buf[1];
-    gapbuf_init(buf, z);
+    SplitBuffer buf[1];
+    splitbuf_init(buf, z);
 
     FILE *fontfile = fopen("font32.ppm", "rb");
     struct image *font = image_load(fontfile);
@@ -457,54 +480,54 @@ animate(const struct command *p, size_t z, FILE *imgout)
             case C_FORWARD: {
                 int v = p->arg.v;
                 while (v--) {
-                    gapbuf_forward(buf);
+                    splitbuf_forward(buf);
                     FRAME();
                 }
             } break;
             case C_BACKWARD: {
                 int v = p->arg.v;
                 while (v--) {
-                    gapbuf_backward(buf);
+                    splitbuf_backward(buf);
                     FRAME();
                 }
             } break;
             case C_QMOVE: {
-                gapbuf_move(buf, p->arg.v);
+                splitbuf_move(buf, p->arg.v);
             } break;
             case C_INSERT: {
-                gapbuf_insert(buf, p->arg.v);
+                splitbuf_insert(buf, p->arg.v);
                 FRAME();
             } break;
             case C_QINSERT: {
-                gapbuf_insert(buf, p->arg.v);
+                splitbuf_insert(buf, p->arg.v);
             } break;
             case C_QSTRING: {
-                gapbuf_inserts(buf, p->arg.s);
+                splitbuf_inserts(buf, p->arg.s);
             } break;
             case C_STRING: {
                 for (const char *s = p->arg.s; *s; s++) {
-                    gapbuf_insert(buf, *s);
+                    splitbuf_insert(buf, *s);
                     FRAME();
                 }
             } break;
             case C_DELETE: {
                 int v = p->arg.v;
                 while (v--) {
-                    gapbuf_delete(buf);
+                    splitbuf_delete(buf);
                     FRAME();
                 }
             } break;
             case C_BACKSPACE: {
                 int v = p->arg.v;
                 while (v--) {
-                    gapbuf_backspace(buf);
+                    splitbuf_backspace(buf);
                     FRAME();
                 }
             } break;
         }
     }
 
-    gapbuf_destroy(buf);
+    splitbuf_destroy(buf);
     free(font);
 }
 
@@ -552,122 +575,5 @@ main(void)
     };
     f = fopen("intro.ppm", "wb");
     animate(intro, 38, f);
-    fclose(f);
-
-    static const struct command multicursors[] = {
-        {C_QSTRING,   .arg.s = "foo(); bar(); baz();"},
-        {C_QMOVE,     .arg.v = -16},
-        {C_WAIT,      .arg.v = FPS},
-
-        {C_INSERT,    .arg.v = 'x'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 7},
-        {C_INSERT,    .arg.v = 'x'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 7},
-        {C_INSERT,    .arg.v = 'x'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_BACKWARD,  .arg.v = 8 * 2},
-
-        {C_INSERT,    .arg.v = ','},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 8},
-        {C_INSERT,    .arg.v = ','},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 8},
-        {C_INSERT,    .arg.v = ','},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_BACKWARD,  .arg.v = 9 * 2},
-
-        {C_INSERT,    .arg.v = ' '},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 9},
-        {C_INSERT,    .arg.v = ' '},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 9},
-        {C_INSERT,    .arg.v = ' '},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_BACKWARD,  .arg.v = 10 * 2},
-
-        {C_INSERT,    .arg.v = 'y'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 10},
-        {C_INSERT,    .arg.v = 'y'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 10},
-        {C_INSERT,    .arg.v = 'y'},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_BACKWARD,  .arg.v = 11 * 2},
-
-        {C_WAIT,      .arg.v = FPS * 2},
-        {C_HALT},
-    };
-    f = fopen("multicursors.ppm", "wb");
-    animate(multicursors, 38, f);
-    fclose(f);
-
-    static const struct command macros[] = {
-        {C_QSTRING,   .arg.s = "foo(); bar(); baz();"},
-        {C_QMOVE,     .arg.v = -16},
-        {C_WAIT,      .arg.v = FPS},
-
-        {C_STRING,    .arg.s = "x, y"},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 7},
-        {C_STRING,    .arg.s = "x, y"},
-        {C_WAIT,      .arg.v = FPS / 4},
-        {C_FORWARD,   .arg.v = 7},
-        {C_STRING,    .arg.s = "x, y"},
-        {C_WAIT,      .arg.v = FPS / 4},
-
-        {C_WAIT,      .arg.v = FPS * 2},
-        {C_HALT},
-    };
-    f = fopen("macros.ppm", "wb");
-    animate(macros, 38, f);
-    fclose(f);
-
-    static const struct command illusion[] = {
-        {C_QSTRING,   .arg.s = "foo(); bar(); baz();"},
-        {C_QMOVE,     .arg.v = -16},
-        {C_WAIT,      .arg.v = FPS},
-
-        {C_QINSERT,   .arg.v = 'x'},
-        {C_QMOVE,     .arg.v = 7},
-        {C_QINSERT,   .arg.v = 'x'},
-        {C_QMOVE,     .arg.v = 7},
-        {C_QINSERT,   .arg.v = 'x'},
-        {C_QMOVE,     .arg.v = -8 * 2},
-        {C_WAIT,      .arg.v = FPS / 4},
-
-        {C_QINSERT,   .arg.v = ','},
-        {C_QMOVE,     .arg.v = 8},
-        {C_QINSERT,   .arg.v = ','},
-        {C_QMOVE,     .arg.v = 8},
-        {C_QINSERT,   .arg.v = ','},
-        {C_QMOVE,     .arg.v = -9 * 2},
-        {C_WAIT,      .arg.v = FPS / 4},
-
-        {C_QINSERT,   .arg.v = ' '},
-        {C_QMOVE,     .arg.v = 9},
-        {C_QINSERT,   .arg.v = ' '},
-        {C_QMOVE,     .arg.v = 9},
-        {C_QINSERT,   .arg.v = ' '},
-        {C_QMOVE,     .arg.v = -10 * 2},
-        {C_WAIT,      .arg.v = FPS / 4},
-
-        {C_QINSERT,   .arg.v = 'y'},
-        {C_QMOVE,     .arg.v = 10},
-        {C_QINSERT,   .arg.v = 'y'},
-        {C_QMOVE,     .arg.v = 10},
-        {C_QINSERT,   .arg.v = 'y'},
-        {C_QMOVE,     .arg.v = -11 * 2},
-        {C_WAIT,      .arg.v = FPS / 4},
-
-        {C_WAIT,      .arg.v = FPS * 2},
-        {C_HALT},
-    };
-    f = fopen("illusion.ppm", "wb");
-    animate(illusion, 38, f);
     fclose(f);
 }

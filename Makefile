@@ -16,7 +16,7 @@ view: intro.ppm multicursors.ppm macros.ppm illusion.ppm
 	ppmtoy4m -F 10:1 < macros.ppm       | mpv --really-quiet -
 	ppmtoy4m -F 10:1 < illusion.ppm     | mpv --really-quiet -
 
-gif: intro.gif multicursors.gif macros.gif illusion.gif
+gif: intro.gif
 
 clean:
 	rm -f splitbuf-anim
