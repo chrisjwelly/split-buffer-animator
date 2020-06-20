@@ -15,3 +15,5 @@ splitbuf-anim
 # This .SYM gets generated in Macbook
 splitbuf-anim.dSYM/
 *.gif
+
+.DS_Store

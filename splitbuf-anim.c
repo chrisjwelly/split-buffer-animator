@@ -393,6 +393,50 @@ draw_char(struct image *m, int i, int c, const struct image *font, int invert)
     }
 }
 
+static void
+draw_char_preGap(struct image *m, int i, int c, const struct image *font, int invert)
+{
+    if (c < ' ' || c > '~')
+        c = ' ';
+    int fx = c % 16;
+    int fy = c / 16 - 2;
+    int fw = font->w / 16;
+    int fh = font->h / 6;
+    int h = GAPBUF_FONTSCALE / 2;
+    int w = fw * h / fh;
+    int bx = w * i;
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            float sx = fx * fw + (float)x * fw / w;
+            float sy = fy * fh + (float)y * fh / h;
+            unsigned long rgb = image_get(font, sx, sy);
+            image_set(m, bx + x, y + GAPBUF_FONTSCALE, invert ? -1UL ^ rgb : rgb);
+        }
+    }
+}
+
+static void
+draw_char_postGap(struct image *m, int i, int c, const struct image *font, int invert)
+{
+    if (c < ' ' || c > '~')
+        c = ' ';
+    int fx = c % 16;
+    int fy = c / 16 - 2;
+    int fw = font->w / 16;
+    int fh = font->h / 6;
+    int h = GAPBUF_FONTSCALE / 2;
+    int w = fw * h / fh;
+    int bx = w * i;
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            float sx = fx * fw + (float)x * fw / w;
+            float sy = fy * fh + (float)y * fh / h;
+            unsigned long rgb = image_get(font, sx, sy);
+            image_set(m, bx + x, y + GAPBUF_FONTSCALE * 3/2, invert ? -1UL ^ rgb : rgb);
+        }
+    }
+}
+
 struct image *
 gapbuf_draw(const struct gapbuf *b, const struct image *font)
 {
@@ -424,14 +468,14 @@ splitbuf_draw(SplitBuffer *b, const struct image *font)
     image_rect(m, 0, 0, w, h, GAPBUF_BG);
 
     for (size_t i = 0; i < b->preGap->size; i++) {
-      draw_block_preGap(m, i);
+      draw_char_preGap(m, i, b->preGap->items[i], font, 0);
       draw_char(m, i, b->preGap->items[i], font, 0);
     }
 
     for (size_t i = 0; i < b->postGap->size; i++) {
       int sequenceIdx = b->preGap->size + i;
       int postGapIdx = (b->postGap->size - 1) - i;
-      draw_block_postGap(m, i);
+      draw_char_postGap(m, i, b->postGap->items[i], font, 0);
       draw_char(m, sequenceIdx, b->postGap->items[postGapIdx], font, i == 0);
     }
     /* Always draw the cursor */
