@@ -22,8 +22,8 @@ void array_append(Array* arr, int item) {
 }
 
 int array_remove_last(Array* arr) {
-  int deleted = arr->items[arr->size];
-  arr->items[arr->size] = 0; // by right can also not do anything
+  int deleted = arr->items[arr->size - 1];
+  arr->items[arr->size - 1] = 0; // by right can also not do anything
   arr->size--;
   if (arr->size == (int) (arr->capacity / 4)) {
     int* new_items = calloc((int) (arr->capacity / 2), sizeof(int));
@@ -40,6 +40,7 @@ void array_destroy(Array* arr) {
   free(arr->items);
 }
 
+/*
 int main() {
   Array arr;
   array_init(&arr, 4);
@@ -70,3 +71,4 @@ int main() {
   return 0;
 
 }
+*/
