@@ -56,13 +56,13 @@ void splitbuf_flush(SplitBuffer *b) {
   printf("Flushing...\n");
   printf("Size of preGap: %d, postGap: %d\n", b->preGap->size, b->postGap->size);
   for (int i = 0; i < b->preGap->size; i++) {
-    printf("%d ", b->preGap->items[i]);
+    printf("%c ", b->preGap->items[i]);
   }
 
   printf("| ");
 
   for (int i = b->postGap->size - 1; i >= 0; i--) {
-    printf("%d ", b->postGap->items[i]);
+    printf("%c ", b->postGap->items[i]);
   }
 
   printf("\nEnd of flushing...\n");
@@ -73,32 +73,32 @@ void general_test() {
   SplitBuffer b;
   splitbuf_init(&b, 2);
 
-  splitbuf_insert(&b, 1);
-  splitbuf_insert(&b, 3);
+  splitbuf_insert(&b, '1');
+  splitbuf_insert(&b, '3');
   splitbuf_flush(&b); // 1 3 | 
 
   splitbuf_backward(&b); // 1 | 3
   splitbuf_flush(&b);
 
-  splitbuf_insert(&b, 2); // 1 2| 3
+  splitbuf_insert(&b, '2'); // 1 2 | 3
   splitbuf_flush(&b);
 
-  splitbuf_insert(&b, 100); // 1 2 100 | 3
+  splitbuf_insert(&b, '8'); // 1 2 8 | 3
   splitbuf_flush(&b);
 
   splitbuf_forward(&b);
   splitbuf_flush(&b);
 
-  splitbuf_insert(&b, 200); // 1 2 100 3 200 |
+  splitbuf_insert(&b, '9'); // 1 2 8 3 9 |
   splitbuf_flush(&b);
 
-  splitbuf_backspace(&b); // 1 2 100 3 |
+  splitbuf_backspace(&b); // 1 2 8 3 |
   splitbuf_flush(&b);
 
   splitbuf_backward(&b);
   splitbuf_backward(&b);
-  splitbuf_backward(&b); // 1 | 2 100 3
-  splitbuf_backspace(&b); // | 2 100 3
+  splitbuf_backward(&b); // 1 | 2 8 3
+  splitbuf_backspace(&b); // | 2 8 3
   splitbuf_flush(&b);
 
   splitbuf_destroy(&b);
@@ -151,14 +151,14 @@ void multiple_backwards_then_forwards() {
   SplitBuffer b;
   splitbuf_init(&b, 2);
 
-  splitbuf_insert(&b, 1);
-  splitbuf_insert(&b, 2);
-  splitbuf_insert(&b, 3);
-  splitbuf_insert(&b, 4);
-  splitbuf_insert(&b, 5);
-  splitbuf_insert(&b, 6);
-  splitbuf_insert(&b, 7);
-  splitbuf_insert(&b, 8);
+  splitbuf_insert(&b, '1');
+  splitbuf_insert(&b, '2');
+  splitbuf_insert(&b, '3');
+  splitbuf_insert(&b, '4');
+  splitbuf_insert(&b, '5');
+  splitbuf_insert(&b, '6');
+  splitbuf_insert(&b, '7');
+  splitbuf_insert(&b, '8');
   splitbuf_flush(&b); // 1 2 3 4 ... 8 |
 
   splitbuf_backward(&b);
@@ -193,6 +193,8 @@ void multiple_backwards_then_forwards() {
   splitbuf_forward(&b); // no effect
   splitbuf_backward(&b);
   splitbuf_flush(&b); // 1 2 3 ... 7 | 8
+
+  splitbuf_destroy(&b);
 }
 
 void run_tests() {

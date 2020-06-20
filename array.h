@@ -1,5 +1,5 @@
 typedef struct Array {
-  int* items;
+  char* items;
   int capacity; // how many elements it can hold
   int size; // how many elements are currently inside
 } Array;

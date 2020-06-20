@@ -12,7 +12,7 @@ void array_append(Array* arr, int item) {
   arr->items[arr->size] = item;
   arr->size++;
   if (arr->size == arr->capacity) {
-    int* new_items = calloc(arr->capacity * 2, sizeof(int));
+    char* new_items = calloc(arr->capacity * 2, sizeof(char));
     for (int i = 0; i < arr->size; i++) {
       new_items[i] = arr->items[i];
     }
@@ -26,7 +26,7 @@ int array_remove_last(Array* arr) {
   arr->items[arr->size - 1] = 0; // by right can also not do anything
   arr->size--;
   if (arr->size == (int) (arr->capacity / 4)) {
-    int* new_items = calloc((int) (arr->capacity / 2), sizeof(int));
+    char* new_items = calloc((int) (arr->capacity / 2), sizeof(char));
     for (int i = 0; i < arr->size; i++) {
       new_items[i] = arr->items[i];
     }
