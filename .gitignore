@@ -9,3 +9,9 @@ illusion.ppm
 *.swp
 
 a.out
+
+# After switching to splitbuf-anim
+splitbuf-anim
+# This .SYM gets generated in Macbook
+splitbuf-anim.dSYM/
+*.gif

@@ -1,13 +1,14 @@
 .POSIX:
 .SUFFIXES: .ppm .gif
-CC     = c99
+# Originally c99 instead of gcc
+CC     = gcc
 CFLAGS = -Wall -Wextra -O3 -g3
 LDLIBS = -lm
 
-gapbuf: gapbuf.c
+splitbuf-anim: splitbuf-anim.c
 
-intro.ppm multicursors.ppm macros.ppm illusion.ppm: gapbuf
-	./gapbuf
+intro.ppm multicursors.ppm macros.ppm illusion.ppm: splitbuf-anim
+	./splitbuf-anim
 
 view: intro.ppm multicursors.ppm macros.ppm illusion.ppm
 	ppmtoy4m -F 10:1 < intro.ppm        | mpv --really-quiet -
@@ -18,7 +19,7 @@ view: intro.ppm multicursors.ppm macros.ppm illusion.ppm
 gif: intro.gif multicursors.gif macros.gif illusion.gif
 
 clean:
-	rm -f gapbuf
+	rm -f splitbuf-anim
 	rm -f intro.ppm multicursors.ppm macros.ppm illusion.ppm
 	rm -f intro.gif multicursors.gif macros.gif illusion.gif
 
