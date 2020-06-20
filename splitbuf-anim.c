@@ -352,12 +352,22 @@ gapbuf_write(const struct gapbuf *b, FILE *out)
 #define GAPBUF_FG         0x7f7f7fUL
 
 static void
-draw_block(struct image *m, int i)
+draw_block_preGap(struct image *m, int i)
 {
     int x0 = i * GAPBUF_SCALE + GAPBUF_SCALE * 1 / 8;
     int y0 = GAPBUF_FONTSCALE + GAPBUF_SCALE * 1 / 8;
     int x1 = i * GAPBUF_SCALE + GAPBUF_SCALE * 7 / 8;
     int y1 = GAPBUF_FONTSCALE + GAPBUF_SCALE * 7 / 8;
+    image_rect(m, x0, y0, x1, y1, GAPBUF_FG);
+}
+
+static void
+draw_block_postGap(struct image *m, int i)
+{
+    int x0 = i * GAPBUF_SCALE + GAPBUF_SCALE * 1 / 8;
+    int y0 = GAPBUF_FONTSCALE + GAPBUF_SCALE * 1 / 8 + GAPBUF_SCALE;
+    int x1 = i * GAPBUF_SCALE + GAPBUF_SCALE * 7 / 8;
+    int y1 = GAPBUF_FONTSCALE + GAPBUF_SCALE * 7 / 8 + GAPBUF_SCALE;
     image_rect(m, x0, y0, x1, y1, GAPBUF_FG);
 }
 
@@ -392,11 +402,11 @@ gapbuf_draw(const struct gapbuf *b, const struct image *font)
     image_rect(m, 0, 0, w, h, GAPBUF_BG);
 
     for (size_t i = 0; i < b->front; i++) {
-        draw_block(m, i);
+        // draw_block(m, i);
         draw_char(m, i, b->buf[i], font, 0);
     }
     for (size_t i = b->front + b->gap; i < b->total; i++) {
-        draw_block(m, i);
+        // draw_block(m, i);
         draw_char(m, i - b->gap, b->buf[i], font, i == b->front + b->gap);
     }
     /* Always draw the cursor */
@@ -409,17 +419,19 @@ struct image *
 splitbuf_draw(SplitBuffer *b, const struct image *font)
 {
     int w = 608;
-    int h = GAPBUF_FONTSCALE + GAPBUF_SCALE;
+    int h = GAPBUF_FONTSCALE + GAPBUF_SCALE + GAPBUF_SCALE;
     struct image *m = image_create(w, h);
     image_rect(m, 0, 0, w, h, GAPBUF_BG);
 
     for (size_t i = 0; i < b->preGap->size; i++) {
+      draw_block_preGap(m, i);
       draw_char(m, i, b->preGap->items[i], font, 0);
     }
 
     for (size_t i = 0; i < b->postGap->size; i++) {
       int sequenceIdx = b->preGap->size + i;
       int postGapIdx = (b->postGap->size - 1) - i;
+      draw_block_postGap(m, i);
       draw_char(m, sequenceIdx, b->postGap->items[postGapIdx], font, i == 0);
     }
     /* Always draw the cursor */
