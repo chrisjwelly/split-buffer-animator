@@ -149,7 +149,7 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 struct image *
 splitbuf_draw(SplitBuffer *b, const struct image *font)
 {
-    int num_horiz_chars = 38; // CHANGE THIS ACCORDINGLY
+    int num_horiz_chars = 47; // CHANGE THIS ACCORDINGLY
     int w = num_horiz_chars * SPLITBUF_SCALE;
     int h = SPLITBUF_FONTSCALE + (SPLITBUF_FONTSCALE * 3 / 4) * 2;
     struct image *m = image_create(w, h);
@@ -284,36 +284,32 @@ main(void)
     static const struct command intro[] = {
         {C_WAIT,      .arg.v = FPS},
         {C_STRING,    .arg.s = "This is a buffer."},
-        /* "This is a buffer." */
+        // "This is a buffer.|"
         {C_WAIT,      .arg.v = FPS},
         {C_BACKWARD,  .arg.v = 7},
-        {C_STRING,    .arg.s = "gap "},
-        /* "This is a gap buffer. */
+        {C_STRING,    .arg.s = "split "},
+        // "This is a split |buffer."
         {C_WAIT,      .arg.v = FPS},
-        {C_BACKWARD,  .arg.v = 5},
+        {C_BACKWARD,  .arg.v = 7},
         {C_WAIT,      .arg.v = FPS / 2},
         {C_BACKSPACE, .arg.v = 9},
-        /* " gap buffer. */
+        // "| split buffer."
         {C_INSERT,    .arg.v = 'A'},
-        /* "A gap buffer. */
-        {C_FORWARD,   .arg.v = 11},
+        // "A| split buffer."
+        {C_FORWARD,   .arg.v = 13},
         {C_WAIT,      .arg.v = FPS / 2},
-        {C_STRING,    .arg.s = " is for clustered edits"},
-        /* "A gap buffer is good at clustered edits." */
+        {C_STRING,    .arg.s = " is a variation of the gap buffer"},
+        // "A split buffer is a variation of the gap buffer|."
         {C_WAIT,      .arg.v = FPS / 2},
         {C_FORWARD,   .arg.v = 1},
         {C_WAIT,      .arg.v = FPS},
-        {C_BACKWARD,  .arg.v = 16},
-        {C_BACKSPACE, .arg.v = 24},
-        {C_DELETE,    .arg.v = 1},
-        {C_INSERT,    .arg.v = 'C'}, /* "Clustered edits.*/
-        {C_FORWARD ,  .arg.v = 14},
-        {C_STRING,    .arg.s = " are most efficient!"},
-        {C_DELETE,    .arg.v = 1},
-        /* "Clustered edits are most efficient." */
+        {C_BACKWARD,  .arg.v = 29},
+        {C_DELETE,    .arg.v = 29},
+        // "A split buffer is a|"
+        {C_STRING,     .arg.s = "wesome!"},
         {C_WAIT,      .arg.v = FPS},
-        {C_BACKSPACE, .arg.v = 35},
-        /* "" */
+        // "A split buffer is awesome!"
+        {C_BACKSPACE, .arg.v = 26},
         {C_WAIT,      .arg.v = FPS},
         {C_HALT},
     };
