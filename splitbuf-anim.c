@@ -81,26 +81,6 @@ image_write(const struct image *m, FILE *out)
 #define SPLITBUF_FG         0x7f7f7fUL
 
 static void
-draw_block_preGap(struct image *m, int i)
-{
-    int x0 = i * SPLITBUF_SCALE + SPLITBUF_SCALE * 1 / 8;
-    int y0 = SPLITBUF_FONTSCALE + SPLITBUF_SCALE * 1 / 8;
-    int x1 = i * SPLITBUF_SCALE + SPLITBUF_SCALE * 7 / 8;
-    int y1 = SPLITBUF_FONTSCALE + SPLITBUF_SCALE * 7 / 8;
-    image_rect(m, x0, y0, x1, y1, SPLITBUF_FG);
-}
-
-static void
-draw_block_postGap(struct image *m, int i)
-{
-    int x0 = i * SPLITBUF_SCALE + SPLITBUF_SCALE * 1 / 8;
-    int y0 = SPLITBUF_FONTSCALE + SPLITBUF_SCALE * 1 / 8 + SPLITBUF_SCALE;
-    int x1 = i * SPLITBUF_SCALE + SPLITBUF_SCALE * 7 / 8;
-    int y1 = SPLITBUF_FONTSCALE + SPLITBUF_SCALE * 7 / 8 + SPLITBUF_SCALE;
-    image_rect(m, x0, y0, x1, y1, SPLITBUF_FG);
-}
-
-static void
 draw_char(struct image *m, int i, int c, const struct image *font, int invert)
 {
     if (c < ' ' || c > '~')
@@ -131,7 +111,7 @@ draw_char_preGap(struct image *m, int i, int c, const struct image *font, int in
     int fy = c / 16 - 2;
     int fw = font->w / 16;
     int fh = font->h / 6;
-    int h = SPLITBUF_FONTSCALE / 2;
+    int h = SPLITBUF_FONTSCALE * 3 / 4;
     int w = fw * h / fh;
     int bx = w * i;
     for (int y = 0; y < h; y++) {
@@ -153,7 +133,7 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
     int fy = c / 16 - 2;
     int fw = font->w / 16;
     int fh = font->h / 6;
-    int h = SPLITBUF_FONTSCALE / 2;
+    int h = SPLITBUF_FONTSCALE * 3 / 4;
     int w = fw * h / fh;
     int bx = w * i;
     for (int y = 0; y < h; y++) {
@@ -161,7 +141,7 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
             float sx = fx * fw + (float)x * fw / w;
             float sy = fy * fh + (float)y * fh / h;
             unsigned long rgb = image_get(font, sx, sy);
-            image_set(m, bx + x, y + SPLITBUF_FONTSCALE * 3/2, invert ? -1UL ^ rgb : rgb);
+            image_set(m, bx + x, y + SPLITBUF_FONTSCALE + SPLITBUF_FONTSCALE * 3/4, invert ? -1UL ^ rgb : rgb);
         }
     }
 }
@@ -169,9 +149,9 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 struct image *
 splitbuf_draw(SplitBuffer *b, const struct image *font)
 {
-    int num_horiz_chars = 50; // CHANGE THIS ACCORDINGLY
+    int num_horiz_chars = 38; // CHANGE THIS ACCORDINGLY
     int w = num_horiz_chars * SPLITBUF_SCALE;
-    int h = SPLITBUF_FONTSCALE + SPLITBUF_SCALE + SPLITBUF_SCALE;
+    int h = SPLITBUF_FONTSCALE + (SPLITBUF_FONTSCALE * 3 / 4) * 2;
     struct image *m = image_create(w, h);
     image_rect(m, 0, 0, w, h, SPLITBUF_BG);
 
