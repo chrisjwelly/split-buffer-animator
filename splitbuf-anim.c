@@ -7,6 +7,7 @@
 
 #define MAX(a, b) ((b) > (a) ? (b) : (a))
 #define MIN(a, b) ((b) < (a) ? (b) : (a))
+int max_total_size = -1;
 
 struct image {
     int w;
@@ -149,7 +150,8 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 struct image *
 splitbuf_draw(SplitBuffer *b, const struct image *font)
 {
-    int num_horiz_chars = 47; // CHANGE THIS ACCORDINGLY
+    max_total_size = MAX(max_total_size, b->preGap->size + b->postGap->size);
+    int num_horiz_chars = 48; // CHANGE THIS ACCORDINGLY
     int w = num_horiz_chars * SPLITBUF_SCALE;
     int h = SPLITBUF_FONTSCALE + (SPLITBUF_FONTSCALE * 3 / 4) * 2;
     struct image *m = image_create(w, h);
@@ -315,5 +317,7 @@ main(void)
     };
     f = fopen("intro.ppm", "wb");
     animate(intro, 38, f);
+    printf("The maximum total size of the buffer for %s is: %d\n", "intro", max_total_size);
+    max_total_size = -1; // reset
     fclose(f);
 }
