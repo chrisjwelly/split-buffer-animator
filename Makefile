@@ -1,11 +1,11 @@
 .POSIX:
 .SUFFIXES: .ppm .gif
-# Originally c99 instead of gcc
-CC     = gcc
+# In Mac OS, might have to change c99 to gcc
+CC     = c99
 CFLAGS = -Wall -Wextra -O3 -g3
 LDLIBS = -lm
 
-splitbuf-anim: splitbuf-anim.c
+splitbuf-anim: splitbuf-anim.c splitbuf.c array.c
 
 intro.ppm multicursors.ppm macros.ppm illusion.ppm: splitbuf-anim
 	./splitbuf-anim
