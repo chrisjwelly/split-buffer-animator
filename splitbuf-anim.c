@@ -167,9 +167,9 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 }
 
 struct image *
-splitbuf_draw(SplitBuffer *b, const struct image *font)
+splitbuf_draw(SplitBuffer *b, size_t z, const struct image *font)
 {
-    int w = 608;
+    int w = z; // will cause free(): invalid next size (normal)
     int h = SPLITBUF_FONTSCALE + SPLITBUF_SCALE + SPLITBUF_SCALE;
     struct image *m = image_create(w, h);
     image_rect(m, 0, 0, w, h, SPLITBUF_BG);
@@ -215,7 +215,7 @@ struct command {
 
 #define FRAME() \
     do { \
-        image = splitbuf_draw(buf, font); \
+        image = splitbuf_draw(buf, z, font); \
         image_write(image, imgout); \
         free(image); \
     } while (0)
