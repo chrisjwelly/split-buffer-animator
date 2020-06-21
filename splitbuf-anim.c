@@ -169,7 +169,8 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 struct image *
 splitbuf_draw(SplitBuffer *b, const struct image *font)
 {
-    int w = 608;
+    int num_horiz_chars = 50; // CHANGE THIS ACCORDINGLY
+    int w = num_horiz_chars * SPLITBUF_SCALE;
     int h = SPLITBUF_FONTSCALE + SPLITBUF_SCALE + SPLITBUF_SCALE;
     struct image *m = image_create(w, h);
     image_rect(m, 0, 0, w, h, SPLITBUF_BG);
