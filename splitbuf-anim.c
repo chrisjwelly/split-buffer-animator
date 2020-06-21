@@ -167,9 +167,8 @@ draw_char_postGap(struct image *m, int i, int c, const struct image *font, int i
 }
 
 struct image *
-splitbuf_draw(SplitBuffer *b, const struct image *font)
+splitbuf_draw(SplitBuffer *b, int w, const struct image *font)
 {
-    int w = 608;
     int h = SPLITBUF_FONTSCALE + SPLITBUF_SCALE + SPLITBUF_SCALE;
     struct image *m = image_create(w, h);
     image_rect(m, 0, 0, w, h, SPLITBUF_BG);
@@ -215,7 +214,7 @@ struct command {
 
 #define FRAME() \
     do { \
-        image = splitbuf_draw(buf, font); \
+        image = splitbuf_draw(buf, w, font); \
         image_write(image, imgout); \
         free(image); \
     } while (0)
@@ -225,6 +224,8 @@ animate(const struct command *p, size_t z, FILE *imgout)
 {
     SplitBuffer buf[1];
     splitbuf_init(buf, z);
+    printf("z: %d\n", (int) z);
+    size_t w = 1000; // changing this to z will cause segmentation fault
 
     FILE *fontfile = fopen("font32.ppm", "rb");
     struct image *font = image_load(fontfile);
@@ -294,11 +295,92 @@ animate(const struct command *p, size_t z, FILE *imgout)
     free(font);
 }
 
+size_t splitbuf_total_size(SplitBuffer* b) {
+  return b->preGap->size + b->postGap->size;
+}
+
+size_t compute_max_total_size(const struct command *ptr) {
+    const struct command* p = ptr;
+    SplitBuffer buf[1];
+    splitbuf_init(buf, 8);
+    size_t max_total_size = 0;
+
+    for (; p->op; p++) {
+        switch (p->op) {
+            case C_HALT: {
+            } break;
+            case C_WAIT: {
+            } break;
+            case C_FORWARD: {
+                int v = p->arg.v;
+                while (v--) {
+                    splitbuf_forward(buf);
+                    max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+                }
+            } break;
+            case C_BACKWARD: {
+                int v = p->arg.v;
+                while (v--) {
+                    splitbuf_backward(buf);
+                    max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+                }
+            } break;
+            case C_QMOVE: {
+                splitbuf_move(buf, p->arg.v);
+                max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+            } break;
+            case C_INSERT: {
+                splitbuf_insert(buf, p->arg.v);
+                max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+            } break;
+            case C_QINSERT: {
+                splitbuf_insert(buf, p->arg.v);
+                max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+            } break;
+            case C_QSTRING: {
+                splitbuf_inserts(buf, p->arg.s);
+                max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+            } break;
+            case C_STRING: {
+                for (const char *s = p->arg.s; *s; s++) {
+                    splitbuf_insert(buf, *s);
+                    max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+                }
+            } break;
+            case C_DELETE: {
+                int v = p->arg.v;
+                while (v--) {
+                    splitbuf_delete(buf);
+                    max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+                }
+            } break;
+            case C_BACKSPACE: {
+                int v = p->arg.v;
+                while (v--) {
+                    splitbuf_backspace(buf);
+                    max_total_size = MAX(max_total_size, splitbuf_total_size(buf));
+                }
+            } break;
+        }
+    }
+
+    splitbuf_destroy(buf);
+    return max_total_size;
+}
+
+void animate_optimise_width(const struct command *p, size_t offset, FILE *imgout) {
+  size_t max_total_size = compute_max_total_size(p);
+  printf("max_total_size: %d\n", (int) max_total_size);
+  animate(p, max_total_size + offset, imgout);
+}
+
+
 int
 main(void)
 {
     FILE *f;
 
+    printf("hello world\n");
     #define FPS 10 
     static const struct command intro[] = {
         {C_WAIT,      .arg.v = FPS},
@@ -337,6 +419,7 @@ main(void)
         {C_HALT},
     };
     f = fopen("intro.ppm", "wb");
-    animate(intro, 38, f);
+    // animate(intro, 38, f);
+    animate_optimise_width(intro, 2, f);
     fclose(f);
 }
